@@ -1,0 +1,19 @@
+services:
+  app:
+    image: "{{ app_image }}:{{ app_image_tag }}"
+    restart: unless-stopped
+    environment:
+      - "SPRING_DATASOURCE_URL={{ db_url }}"
+      - "SPRING_DATASOURCE_USERNAME={{ db_user }}"
+      - "SPRING_DATASOURCE_PASSWORD={{ db_password }}"
+      - "S3_ENDPOINT={{ s3_endpoint }}"
+      - "S3_ACCESS_KEY={{ s3_access_key }}"
+      - "S3_SECRET_KEY={{ s3_secret_key }}"
+    ports:
+      - "{{ app_port }}:8080"
+      - "9090:9090"
+    volumes:
+      - ./data:/app/data
+      - ./logs:/app/logs
+    
+

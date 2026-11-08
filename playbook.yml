@@ -71,3 +71,10 @@
     - name: Enable UFW firewall
       ansible.builtin.ufw:
         state: enabled
+
+- name: Deploy project-devops-deploy application
+  hosts: webservers
+  become: true
+  roles:
+    - role: deploy
+

@@ -1,0 +1,51 @@
+---
+- name: Create app directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: "0755"
+  loop:
+    - "{{ app_dir }}"
+    - "{{ app_dir }}/data"
+    - "{{ app_dir }}/logs"
+
+- name: Render docker-compose.yml
+  ansible.builtin.template:
+    src: docker-compose.yml.j2
+    dest: "{{ app_dir }}/docker-compose.yml"
+    mode: "0644"
+  notify: Restart app
+
+- name: Pull fresh image
+  community.docker.docker_compose_v2:
+    project_src: "{{ app_dir }}"
+    pull: always
+  tags: deploy
+
+- name: Recreate containers with minimal downtime
+  community.docker.docker_compose_v2:
+    project_src: "{{ app_dir }}"
+    state: present
+    recreate: always
+    wait: true
+    wait_timeout: 60
+
+- name: Wait for health endpoint
+  ansible.builtin.uri:
+    url: "http://localhost:9090/actuator/health"
+    status_code: 200
+  register: health
+  retries: 10
+  delay: 5
+  until: health.status == 200
+
+
+- name: Record deployed tag
+  ansible.builtin.copy:
+    content: "{{ app_image_tag }}"
+    dest: "{{ app_dir }}/release_tag"
+    mode: "0644"
+
+
