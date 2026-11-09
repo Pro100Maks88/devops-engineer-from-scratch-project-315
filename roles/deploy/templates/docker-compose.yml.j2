@@ -1,7 +1,22 @@
 services:
+  migration:
+    image: postgres:17
+    entrypoint:
+      - sh
+      - -c
+      - "psql -h {{ db_host }} -p 6432 -U {{ db_user }} -d {{ db_name }} -f /migrations/V1__init.sql"
+    environment:
+      - "PGPASSWORD={{ db_password }}"
+      - "PGSSLMODE=disable"
+    volumes:
+      - ./migrations:/migrations:ro
+
   app:
     image: "{{ app_image }}:{{ app_image_tag }}"
     restart: unless-stopped
+    depends_on:
+      migration:
+        condition: service_completed_successfully
     environment:
       - "SPRING_DATASOURCE_URL={{ db_url }}"
       - "SPRING_DATASOURCE_USERNAME={{ db_user }}"
@@ -15,5 +30,6 @@ services:
     volumes:
       - ./data:/app/data
       - ./logs:/app/logs
+
     
 

@@ -10,6 +10,16 @@
     - "{{ app_dir }}"
     - "{{ app_dir }}/data"
     - "{{ app_dir }}/logs"
+    - "{{ app_dir }}/migrations"
+
+- name: Copy migrations
+  ansible.builtin.copy:
+    src: migrations/
+    dest: "{{ app_dir }}/migrations/"
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: "0644"
+  notify: Restart app
 
 - name: Render docker-compose.yml
   ansible.builtin.template:
@@ -17,6 +27,12 @@
     dest: "{{ app_dir }}/docker-compose.yml"
     mode: "0644"
   notify: Restart app
+
+- name: Run database migrations
+  community.docker.docker_compose_v2:
+    project_src: "{{ app_dir }}"
+    services: migration
+    state: present
 
 - name: Pull fresh image
   community.docker.docker_compose_v2:
@@ -41,11 +57,11 @@
   delay: 5
   until: health.status == 200
 
-
 - name: Record deployed tag
   ansible.builtin.copy:
     content: "{{ app_image_tag }}"
     dest: "{{ app_dir }}/release_tag"
     mode: "0644"
+
 
 

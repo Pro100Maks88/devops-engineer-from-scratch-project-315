@@ -1,4 +1,6 @@
-db_host: "ya-db.example.com"
+db_host: "rc1d-af6qam1lb84p8csm.mdb.yandexcloud.net"
+db_port: 6432
+db_name: "bulletin"
 s3_endpoint: "https://storage.yandexcloud.net"
 
 db_user: "{{ vault_db_user }}"
@@ -8,4 +10,5 @@ s3_secret_key: "{{ vault_s3_secret_key }}"
 db_url: "{{ vault_db_url }}"
 
 app_domain: "bulletin-board.mooo.com"
+
 
