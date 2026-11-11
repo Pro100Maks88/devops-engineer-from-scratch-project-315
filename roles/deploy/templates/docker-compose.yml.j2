@@ -27,11 +27,25 @@ services:
       - "STORAGE_S3_BUCKET={{ s3_bucket_name }}"
       - "STORAGE_S3_REGION=ru-central1"
     ports:
-      - "{{ app_port }}:8080"
-      - "9090:9090"
+      - "127.0.0.1:8080:8080"
+      - "127.0.0.1:9090:9090"
     volumes:
       - ./data:/app/data
       - ./logs:/app/logs
+
+  nginx:
+    image: nginx:1.27-alpine
+    restart: unless-stopped
+    depends_on:
+      - app
+    ports:
+      - "{{ app_port }}:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - nginx_cache:/var/cache/nginx
+
+volumes:
+  nginx_cache:
 
 
     

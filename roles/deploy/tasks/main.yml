@@ -11,6 +11,7 @@
     - "{{ app_dir }}/data"
     - "{{ app_dir }}/logs"
     - "{{ app_dir }}/migrations"
+    - "{{ app_dir }}/nginx"
 
 - name: Copy migrations
   ansible.builtin.copy:
@@ -27,6 +28,15 @@
     dest: "{{ app_dir }}/docker-compose.yml"
     mode: "0644"
   notify: Restart app
+
+- name: Render nginx config
+  ansible.builtin.template:
+    src: nginx.conf.j2
+    dest: "{{ app_dir }}/nginx/nginx.conf"
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: "0644"
+  notify: Restart nginx
 
 - name: Run database migrations
   community.docker.docker_compose_v2:
@@ -62,6 +72,7 @@
     content: "{{ app_image_tag }}"
     dest: "{{ app_dir }}/release_tag"
     mode: "0644"
+
 
 
 
