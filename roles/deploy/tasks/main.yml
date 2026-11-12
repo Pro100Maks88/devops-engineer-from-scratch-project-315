@@ -12,6 +12,60 @@
     - "{{ app_dir }}/logs"
     - "{{ app_dir }}/migrations"
     - "{{ app_dir }}/nginx"
+    - "{{ app_dir }}/certbot/www"
+
+- name: Install certbot
+  become: true
+  ansible.builtin.apt:
+    name: certbot
+    state: present
+    update_cache: true
+
+- name: Check if certificate already issued
+  become: true
+  ansible.builtin.stat:
+    path: "/etc/letsencrypt/live/{{ app_domain }}/fullchain.pem"
+  register: letsencrypt_cert
+
+- name: Render docker-compose.yml
+  ansible.builtin.template:
+    src: docker-compose.yml.j2
+    dest: "{{ app_dir }}/docker-compose.yml"
+    mode: "0644"
+
+- name: Render nginx config
+  ansible.builtin.template:
+    src: nginx.conf.j2
+    dest: "{{ app_dir }}/nginx/nginx.conf"
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: "0644"
+  vars:
+    ssl_enabled: "{{ letsencrypt_cert.stat.exists }}"
+  notify: Restart nginx
+
+- name: Start nginx before issuing certificate
+  community.docker.docker_compose_v2:
+    project_src: "{{ app_dir }}"
+    services: nginx
+    state: present
+
+- name: Issue Let's Encrypt certificate
+  become: true
+  ansible.builtin.command: >
+    certbot certonly --webroot -w {{ app_dir }}/certbot/www
+    -d {{ app_domain }}
+    --email {{ letsencrypt_email }} --agree-tos --non-interactive
+  when: not letsencrypt_cert.stat.exists
+
+- name: Install renewal deploy hook
+  become: true
+  ansible.builtin.copy:
+    dest: /etc/letsencrypt/renewal-hooks/deploy/reload-nginx.sh
+    mode: "0755"
+    content: |
+      #!/bin/bash
+      docker compose -f {{ app_dir }}/docker-compose.yml exec -T nginx nginx -s reload
 
 - name: Copy migrations
   ansible.builtin.copy:
@@ -21,22 +75,6 @@
     group: "{{ ansible_user }}"
     mode: "0644"
   notify: Restart app
-
-- name: Render docker-compose.yml
-  ansible.builtin.template:
-    src: docker-compose.yml.j2
-    dest: "{{ app_dir }}/docker-compose.yml"
-    mode: "0644"
-  notify: Restart app
-
-- name: Render nginx config
-  ansible.builtin.template:
-    src: nginx.conf.j2
-    dest: "{{ app_dir }}/nginx/nginx.conf"
-    owner: "{{ ansible_user }}"
-    group: "{{ ansible_user }}"
-    mode: "0644"
-  notify: Restart nginx
 
 - name: Run database migrations
   community.docker.docker_compose_v2:
