@@ -5,3 +5,4 @@ vault.yml
 .DS_Store
 group_vars/all/vault.yml
 *.pem
+.ansible
