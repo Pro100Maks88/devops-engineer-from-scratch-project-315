@@ -4,5 +4,4 @@ vault.yml
 .vault-pass
 .DS_Store
 group_vars/all/vault.yml
-*.pem
 .ansible
