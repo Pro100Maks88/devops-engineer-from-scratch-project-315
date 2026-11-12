@@ -110,7 +110,3 @@
     content: "{{ app_image_tag }}"
     dest: "{{ app_dir }}/release_tag"
     mode: "0644"
-
-
-
-

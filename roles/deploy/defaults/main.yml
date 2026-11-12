@@ -1,7 +1,7 @@
+---
 app_name: project-devops-deploy
 app_dir: /opt/bulletin-board
 app_registry: docker.io/golovinmd
 app_image: "{{ app_registry }}/{{ app_name }}"
 app_image_tag: "v0.1.0"
 app_port: "80"
-
