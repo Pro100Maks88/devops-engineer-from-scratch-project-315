@@ -1,6 +1,17 @@
 ### Hexlet tests and linter status:
 [![Actions Status](https://github.com/Pro100Maks88/devops-engineer-from-scratch-project-315/actions/workflows/hexlet-check.yml/badge.svg)](https://github.com/Pro100Maks88/devops-engineer-from-scratch-project-315/actions)
 
+Bulletin board service.
+
+## About this repository
+
+This repository contains the Ansible-based infrastructure-as-code setup used to
+deploy the application from [Pro100Maks88/project-devops-deploy](https://github.com/Pro100Maks88/project-devops-deploy)
+to a Yandex Cloud VM: server provisioning, Docker, Nginx + Let's Encrypt (HTTPS),
+S3-compatible object storage, and automated deploy/update/rollback via `Makefile`.
+
+Created as part of Hexlet's "Bulletin board" assig
+
 ## Доступ к сервису
 
 Приложение доступно по адресу: **http://bulletin-board.mooo.com**
