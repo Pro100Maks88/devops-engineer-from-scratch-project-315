@@ -7,12 +7,12 @@
     group: "{{ ansible_user }}"
     mode: "0755"
   loop:
-    - "{{ app_dir }}"
-    - "{{ app_dir }}/data"
-    - "{{ app_dir }}/logs"
-    - "{{ app_dir }}/migrations"
-    - "{{ app_dir }}/nginx"
-    - "{{ app_dir }}/certbot/www"
+    - "{{ deploy_app_dir }}"
+    - "{{ deploy_app_dir }}/data"
+    - "{{ deploy_app_dir }}/logs"
+    - "{{ deploy_app_dir }}/migrations"
+    - "{{ deploy_app_dir }}/nginx"
+    - "{{ deploy_app_dir }}/certbot/www"
 
 - name: Install certbot
   become: true
@@ -25,38 +25,40 @@
   become: true
   ansible.builtin.stat:
     path: "/etc/letsencrypt/live/{{ app_domain }}/fullchain.pem"
-  register: letsencrypt_cert
+  register: deploy_letsencrypt_cert
 
 - name: Render docker-compose.yml
   ansible.builtin.template:
     src: docker-compose.yml.j2
-    dest: "{{ app_dir }}/docker-compose.yml"
+    dest: "{{ deploy_app_dir }}/docker-compose.yml"
     mode: "0644"
 
 - name: Render nginx config
   ansible.builtin.template:
     src: nginx.conf.j2
-    dest: "{{ app_dir }}/nginx/nginx.conf"
+    dest: "{{ deploy_app_dir }}/nginx/nginx.conf"
     owner: "{{ ansible_user }}"
     group: "{{ ansible_user }}"
     mode: "0644"
   vars:
-    ssl_enabled: "{{ letsencrypt_cert.stat.exists }}"
+    ssl_enabled: "{{ deploy_letsencrypt_cert.stat.exists }}"
   notify: Restart nginx
 
 - name: Start nginx before issuing certificate
   community.docker.docker_compose_v2:
-    project_src: "{{ app_dir }}"
+    project_src: "{{ deploy_app_dir }}"
     services: nginx
     state: present
 
 - name: Issue Let's Encrypt certificate
   become: true
   ansible.builtin.command: >
-    certbot certonly --webroot -w {{ app_dir }}/certbot/www
+    certbot certonly --webroot -w {{ deploy_app_dir }}/certbot/www
     -d {{ app_domain }}
     --email {{ letsencrypt_email }} --agree-tos --non-interactive
-  when: not letsencrypt_cert.stat.exists
+  register: deploy_certbot_result
+  when: not deploy_letsencrypt_cert.stat.exists
+  changed_when: "'Successfully received certificate' in deploy_certbot_result.stdout"
 
 - name: Install renewal deploy hook
   become: true
@@ -65,12 +67,13 @@
     mode: "0755"
     content: |
       #!/bin/bash
-      docker compose -f {{ app_dir }}/docker-compose.yml exec -T nginx nginx -s reload
+      docker compose -f {{ deploy_app_dir }}/docker-compose.yml \
+        exec -T nginx nginx -s reload
 
 - name: Copy migrations
   ansible.builtin.copy:
     src: migrations/
-    dest: "{{ app_dir }}/migrations/"
+    dest: "{{ deploy_app_dir }}/migrations/"
     owner: "{{ ansible_user }}"
     group: "{{ ansible_user }}"
     mode: "0644"
@@ -78,19 +81,19 @@
 
 - name: Run database migrations
   community.docker.docker_compose_v2:
-    project_src: "{{ app_dir }}"
+    project_src: "{{ deploy_app_dir }}"
     services: migration
     state: present
 
 - name: Pull fresh image
   community.docker.docker_compose_v2:
-    project_src: "{{ app_dir }}"
+    project_src: "{{ deploy_app_dir }}"
     pull: always
   tags: deploy
 
 - name: Recreate containers with minimal downtime
   community.docker.docker_compose_v2:
-    project_src: "{{ app_dir }}"
+    project_src: "{{ deploy_app_dir }}"
     state: present
     recreate: always
     wait: true
@@ -100,13 +103,13 @@
   ansible.builtin.uri:
     url: "http://localhost:9090/actuator/health"
     status_code: 200
-  register: health
+  register: deploy_health
   retries: 10
   delay: 5
-  until: health.status == 200
+  until: deploy_health.status == 200
 
 - name: Record deployed tag
   ansible.builtin.copy:
-    content: "{{ app_image_tag }}"
-    dest: "{{ app_dir }}/release_tag"
+    content: "{{ deploy_app_image_tag }}"
+    dest: "{{ deploy_app_dir }}/release_tag"
     mode: "0644"
