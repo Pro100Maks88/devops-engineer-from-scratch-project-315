@@ -10,7 +10,6 @@ deploy the application from [Pro100Maks88/project-devops-deploy](https://github.
 to a Yandex Cloud VM: server provisioning, Docker, Nginx + Let's Encrypt (HTTPS),
 S3-compatible object storage, and automated deploy/update/rollback via `Makefile`.
 
-Created as part of Hexlet's "Bulletin board" assig
 
 ## Deployment Requirements
 
@@ -34,3 +33,6 @@ Created as part of Hexlet's "Bulletin board" assig
 - IP-адрес: 130.193.58.173
 - Проверка DNS: `dig +short bulletin-board.mooo.com @1.1.1.1`
 - Статус: HTTP/1.1 200 OK
+
+
+Created as part of Hexlet's "Bulletin board" assig
