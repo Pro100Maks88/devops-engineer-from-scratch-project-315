@@ -26,7 +26,7 @@ S3-compatible object storage, and automated deploy/update/rollback via `Makefile
 
 ## Доступ к сервису
 
-Приложение доступно по адресу: **http://bulletin-board.mooo.com**
+Приложение доступно по адресу: **https://bulletin-board.mooo.com**
 
 - DNS-провайдер: freedns.afraid.org
 - Тип записи: A
