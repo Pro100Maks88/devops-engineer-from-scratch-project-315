@@ -1,13 +1,14 @@
-db_host: "rc1d-af6qam1lb84p8csm.mdb.yandexcloud.net"
-db_port: 6432
-db_name: "bulletin"
-s3_endpoint: "https://storage.yandexcloud.net"
-s3_bucket_name: "bulletin-board-golovinmd"
+deploy_db_host: "rc1d-af6qam1lb84p8csm.mdb.yandexcloud.net"
+deploy_db_port: 6432
+deploy_db_name: "bulletin"
+deploy_s3_endpoint: "https://storage.yandexcloud.net"
+deploy_s3_bucket_name: "bulletin-board-golovinmd"
 
-db_user: "{{ vault_db_user }}"
-db_password: "{{ vault_db_password }}"
-s3_access_key: "{{ vault_s3_access_key }}"
-s3_secret_key: "{{ vault_s3_secret_key }}"
-db_url: "{{ vault_db_url }}"
+deploy_db_user: "{{ vault_db_user }}"
+deploy_db_password: "{{ vault_db_password }}"
+deploy_s3_access_key: "{{ vault_s3_access_key }}"
+deploy_s3_secret_key: "{{ vault_s3_secret_key }}"
+deploy_db_url: "{{ vault_db_url }}"
 
-app_domain: "bulletin-board.mooo.com"
+deploy_app_domain: "bulletin-board.mooo.com"
+

@@ -1,16 +1,12 @@
 ---
 - name: Restart app
   community.docker.docker_compose_v2:
-    project_src: "{{ app_dir }}"
-    state: restarted
-
-- name: Restart app
-  community.docker.docker_compose_v2:
-    project_src: "{{ app_dir }}"
+    project_src: "{{ deploy_app_dir }}"
     state: restarted
 
 - name: Restart nginx
   community.docker.docker_compose_v2:
-    project_src: "{{ app_dir }}"
+    project_src: "{{ deploy_app_dir }}"
     services: nginx
     state: restarted
+

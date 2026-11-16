@@ -24,7 +24,7 @@
 - name: Check if certificate already issued
   become: true
   ansible.builtin.stat:
-    path: "/etc/letsencrypt/live/{{ app_domain }}/fullchain.pem"
+    path: "/etc/letsencrypt/live/{{ deploy_app_domain }}/fullchain.pem"
   register: deploy_letsencrypt_cert
 
 - name: Render docker-compose.yml
@@ -54,8 +54,8 @@
   become: true
   ansible.builtin.command: >
     certbot certonly --webroot -w {{ deploy_app_dir }}/certbot/www
-    -d {{ app_domain }}
-    --email {{ letsencrypt_email }} --agree-tos --non-interactive
+    -d {{ deploy_app_domain }}
+    --email {{ deploy_letsencrypt_email }} --agree-tos --non-interactive
   register: deploy_certbot_result
   when: not deploy_letsencrypt_cert.stat.exists
   changed_when: "'Successfully received certificate' in deploy_certbot_result.stdout"

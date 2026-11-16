@@ -35,4 +35,4 @@ S3-compatible object storage, and automated deploy/update/rollback via `Makefile
 - Статус: HTTP/1.1 200 OK
 
 
-Created as part of Hexlet's "Bulletin board" assig
+Создано в рамках проекта «Доска объявлений» курса «DevOps-инженер с нуля» на платформе Hexlet.

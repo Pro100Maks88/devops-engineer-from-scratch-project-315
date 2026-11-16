@@ -4,27 +4,27 @@ services:
     entrypoint:
       - sh
       - -c
-      - "psql -h {{ db_host }} -p 6432 -U {{ db_user }} -d {{ db_name }} -f /migrations/V1__init.sql"
+      - "psql -h {{ deploy_db_host }} -p 6432 -U {{ deploy_db_user }} -d {{ deploy_db_name }} -f /migrations/V1__init.sql"
     environment:
-      - "PGPASSWORD={{ db_password }}"
+      - "PGPASSWORD={{ deploy_db_password }}"
       - "PGSSLMODE=disable"
     volumes:
       - ./migrations:/migrations:ro
 
   app:
-    image: "{{ app_image }}:{{ app_image_tag }}"
+    image: "{{ deploy_app_image }}:{{ deploy_app_image_tag }}"
     restart: unless-stopped
     depends_on:
       migration:
         condition: service_completed_successfully
     environment:
-      - "SPRING_DATASOURCE_URL={{ db_url }}"
-      - "SPRING_DATASOURCE_USERNAME={{ db_user }}"
-      - "SPRING_DATASOURCE_PASSWORD={{ db_password }}"
-      - "STORAGE_S3_ENDPOINT={{ s3_endpoint }}"
-      - "STORAGE_S3_ACCESSKEY={{ s3_access_key }}"
-      - "STORAGE_S3_SECRETKEY={{ s3_secret_key }}"
-      - "STORAGE_S3_BUCKET={{ s3_bucket_name }}"
+      - "SPRING_DATASOURCE_URL={{ deploy_db_url }}"
+      - "SPRING_DATASOURCE_USERNAME={{ deploy_db_user }}"
+      - "SPRING_DATASOURCE_PASSWORD={{ deploy_db_password }}"
+      - "STORAGE_S3_ENDPOINT={{ deploy_s3_endpoint }}"
+      - "STORAGE_S3_ACCESSKEY={{ deploy_s3_access_key }}"
+      - "STORAGE_S3_SECRETKEY={{ deploy_s3_secret_key }}"
+      - "STORAGE_S3_BUCKET={{ deploy_s3_bucket_name }}"
       - "STORAGE_S3_REGION=ru-central1"
     ports:
       - "127.0.0.1:8080:8080"
@@ -39,7 +39,7 @@ services:
     depends_on:
       - app
     ports:
-      - "{{ app_port }}:80"
+      - "{{ deploy_app_port }}:80"
       - "443:443"
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro

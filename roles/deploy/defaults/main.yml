@@ -1,7 +1,9 @@
 ---
-app_name: project-devops-deploy
-app_dir: /opt/bulletin-board
-app_registry: docker.io/golovinmd
-app_image: "{{ app_registry }}/{{ app_name }}"
-app_image_tag: "v0.1.0"
-app_port: "80"
+deploy_app_name: project-devops-deploy
+deploy_app_dir: /opt/bulletin-board
+deploy_app_registry: docker.io/golovinmd
+deploy_app_image: "{{ deploy_app_registry }}/{{ deploy_app_name }}"
+deploy_app_image_tag: "v0.1.0"
+deploy_app_port: "80"
+deploy_app_domain: bulletin-board.mooo.com
+deploy_letsencrypt_email: maksim.golovin1@yandex.ru
