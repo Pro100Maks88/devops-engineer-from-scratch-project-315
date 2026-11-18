@@ -14,13 +14,6 @@
     - "{{ deploy_app_dir }}/nginx"
     - "{{ deploy_app_dir }}/certbot/www"
 
-- name: Install certbot
-  become: true
-  ansible.builtin.apt:
-    name: certbot
-    state: present
-    update_cache: true
-
 - name: Check if certificate already issued
   become: true
   ansible.builtin.stat:
@@ -50,15 +43,22 @@
     services: nginx
     state: present
 
-- name: Issue Let's Encrypt certificate
-  become: true
-  ansible.builtin.command: >
-    certbot certonly --webroot -w {{ deploy_app_dir }}/certbot/www
-    -d {{ deploy_app_domain }}
-    --email {{ deploy_letsencrypt_email }} --agree-tos --non-interactive
-  register: deploy_certbot_result
-  when: not deploy_letsencrypt_cert.stat.exists
-  changed_when: "'Successfully received certificate' in deploy_certbot_result.stdout"
+- name: Install certbot and issue certificate via webroot
+  ansible.builtin.include_role:
+    name: geerlingguy.certbot
+  vars:
+    certbot_install_method: package
+    certbot_admin_email: "{{ deploy_letsencrypt_email }}"
+    certbot_auto_renew: true
+    certbot_auto_renew_user: root
+    certbot_auto_renew_hour: "3"
+    certbot_auto_renew_minute: "30"
+    certbot_auto_renew_options: "--quiet"
+    certbot_create_if_missing: true
+    certbot_create_command: >-
+      certbot certonly --webroot -w {{ deploy_app_dir }}/certbot/www
+      -d {{ deploy_app_domain }}
+      --email {{ deploy_letsencrypt_email }} --agree-tos --non-interactive
 
 - name: Install renewal deploy hook
   become: true
